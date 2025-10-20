@@ -1,0 +1,283 @@
+Ôªø<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MirrorLang Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --user-msg-bg: #007bff;
+            --bot-msg-bg: #f1f1f1;
+            --background-gradient: linear-gradient(135deg, #ece9e6 0%, #ffffff 100%);
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--background-gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            max-height: 800px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        header h1 { font-size: 1.5rem; font-weight: 600; }
+        header h2 { font-size: 0.9rem; font-weight: 300; opacity: 0.9; }
+
+        #chat-window {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            word-wrap: break-word;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .user-message {
+            background-color: var(--user-msg-bg);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: var(--bot-msg-bg);
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .play-audio-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .play-audio-btn:hover { transform: scale(1.1); }
+
+        #loading-indicator {
+            text-align: center;
+            padding: 10px;
+            font-style: italic;
+            color: #888;
+        }
+
+        #message-form {
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        #language-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #text-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+        }
+
+        #message-form button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        #message-form button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <header>
+            <h1>MirrorLang</h1>
+            <h2>Tu amigo bilingue para practicar idiomas / Your bilingual friend to practice languages</h2>
+        </header>
+        <div id="chat-window">
+            <div class="message bot-message">
+                <div class="message-content">
+                    <p>Hola! Soy MirrorLang. Env√≠ame un texto en espa√±ol para empezar a practicar. / Hello! I'm MirrorLang. Text me something in English to begin with.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading-indicator" style="display: none;">
+            Pensando... ?? Thinking...
+        </div>
+        <form id="message-form">
+            <div id="language-selector">
+                <label><input type="radio" name="language" value="spanish" checked> Espa√±ol</label>
+                <label><input type="radio" name="language" value="english"> English</label>
+            </div>
+            <div class="input-area">
+                <input type="text" id="text-input" placeholder="Escribe aqu√≠ / Write here...">
+                <button type="submit" title="Enviar texto"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_ENDPOINT = "https://gbgm3p4g85.execute-api.us-east-1.amazonaws.com/dev/mirror";
+            const messageForm = document.getElementById('message-form');
+            const textInput = document.getElementById('text-input');
+            const chatWindow = document.getElementById('chat-window');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            function addLog(message, type = 'info') {
+                const now = new Date().toLocaleTimeString();
+                const logMessage = `[${now}] [${type.toUpperCase()}] ${message}`;
+                if (type === 'error') console.error(logMessage);
+                else console.log(logMessage);
+            }
+
+            messageForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = textInput.value.trim();
+                if (text) {
+                    addMessageToChat('user', text);
+                    sendMessage({ text });
+                    textInput.value = '';
+                }
+            });
+
+            async function sendMessage(payload) {
+                loadingIndicator.style.display = 'block';
+                const selectedLanguage = document.querySelector('input[name="language"]:checked').value;
+
+                const body = {
+                    text: payload.text,
+                    audio: null,
+                    language: selectedLanguage
+                };
+
+                try {
+                    const response = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json; charset=utf-8',
+                            'Accept': 'application/json; charset=utf-8'
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText);
+                    }
+
+                    // Asegura decodificaci®Æn correcta en UTF-8
+                    const responseText = new TextDecoder('utf-8').decode(await response.arrayBuffer());
+                    const data = JSON.parse(responseText);
+
+                    addMessageToChat('bot', data.response, data.audio);
+                } catch (error) {
+                    addLog('Error: ' + error.message, 'error');
+                    addMessageToChat('bot', `?? Error: ${error.message}`);
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+
+            function addMessageToChat(sender, text, audioBase64 = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+
+                const textP = document.createElement('p');
+                textP.innerHTML = text; // ? Permite emojis, acentos, ®™conos
+                contentDiv.appendChild(textP);
+
+                if (sender === 'bot' && audioBase64) {
+                    const playBtn = document.createElement('button');
+                    playBtn.className = 'play-audio-btn';
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    playBtn.onclick = () => {
+                        const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+                        audio.play();
+                    };
+                    contentDiv.insertBefore(playBtn, textP);
+                }
+
+                messageDiv.appendChild(contentDiv);
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
