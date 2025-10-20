@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -168,7 +168,7 @@
         <div id="chat-window">
             <div class="message bot-message">
                 <div class="message-content">
-                    <p>Hola! Soy MirrorLang. Envíame un texto en español para empezar a practicar. / Hello! I'm MirrorLang. Text me something in English to begin with.</p>
+                    <p>Hola! Soy MirrorLang. EnvÃ­ame un texto en espaÃ±ol para empezar a practicar. / Hello! I'm MirrorLang. Text me something in English to begin with.</p>
                 </div>
             </div>
         </div>
@@ -178,11 +178,11 @@
         </div>
         <form id="message-form">
             <div id="language-selector">
-                <label><input type="radio" name="language" value="spanish" checked> Español</label>
+                <label><input type="radio" name="language" value="spanish" checked> EspaÃ±ol</label>
                 <label><input type="radio" name="language" value="english"> English</label>
             </div>
             <div class="input-area">
-                <input type="text" id="text-input" placeholder="Escribe aquí / Write here...">
+                <input type="text" id="text-input" placeholder="Escribe aquÃ­ / Write here...">
                 <button type="submit" title="Enviar texto"><i class="fas fa-paper-plane"></i></button>
             </div>
         </form>
@@ -238,7 +238,7 @@
                         throw new Error(errorText);
                     }
 
-                    // Asegura decodificaci��n correcta en UTF-8
+                    // Asegura decodificaci¨®n correcta en UTF-8
                     const responseText = new TextDecoder('utf-8').decode(await response.arrayBuffer());
                     const data = JSON.parse(responseText);
 
@@ -259,7 +259,7 @@
                 contentDiv.className = 'message-content';
 
                 const textP = document.createElement('p');
-                textP.innerHTML = text; // ? Permite emojis, acentos, ��conos
+                textP.innerHTML = text; // ? Permite emojis, acentos, ¨ªconos
                 contentDiv.appendChild(textP);
 
                 if (sender === 'bot' && audioBase64) {
